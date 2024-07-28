@@ -3,13 +3,21 @@
 .App {
   font-family: Arial, sans-serif;
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
 .options-bar {
-  margin-bottom: 20px;
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
 }
 
 .options-bar input[type="file"] {
+  margin-right: 10px;
+}
+
+.options-bar label {
   margin-right: 10px;
 }
 
@@ -18,29 +26,70 @@
 }
 
 .options-bar button {
-  margin: 0 5px;
+  margin-left: 10px;
 }
 
-.counter {
-  margin: 20px 0;
-  font-size: 14px;
-  color: grey;
+.main-content {
+  margin: 20px;
+}
+
+.main-content h1 {
+  font-size: 3em;
+}
+
+.main-content p {
+  font-size: 1.5em;
+}
+
+.main-content button {
+  margin: 10px;
+  padding: 10px;
+  font-size: 1em;
 }
 
 .progress-view {
-  margin-top: 20px;
+  margin: 20px;
 }
 
-.progress-view ul {
-  list-style-type: none;
-  padding: 0;
+.progress-view table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.progress-view li {
-  margin: 5px 0;
+.progress-view th, .progress-view td {
+  border: 1px solid #ddd;
+  padding: 8px;
 }
 
-button:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
+.progress-view th {
+  background-color: #f2f2f2;
+}
+
+.progress-view td {
+  text-align: center;
+}
+
+.status-bar {
+  margin: 10px;
+  font-size: 1em;
+}
+
+.confirmation-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ddd;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.confirmation-dialog button {
+  margin: 5px;
+  padding: 10px;
+}
+
+.confirmation-dialog p {
+  margin-bottom: 15px;
 }
