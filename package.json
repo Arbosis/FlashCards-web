@@ -1,6 +1,6 @@
 {
   "name": "flashcard-app-web",
-  "homepage": "https://Arbosis.github.io/FlashCards-web"
+  "homepage": "https://Arbosis.github.io/FlashCards-web",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
