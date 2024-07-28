@@ -145,11 +145,14 @@ const App = () => {
           <button onClick={handleBack}>Back</button>
           <h2>Progress</h2>
           <ul>
-            {flashcards.map(card => (
-              <li key={card.Swedish}>
-                {card.Swedish}: {((learningGoal - card.learning_score) / learningGoal * 100).toFixed(0)}%
-              </li>
-            ))}
+            {flashcards.map(card => {
+              const percentage = ((card.learning_score / learningGoal) * 100).toFixed(0);
+              return (
+                <li key={card.Swedish}>
+                  {card.Swedish}: {percentage}%
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
