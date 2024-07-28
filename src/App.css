@@ -1,22 +1,46 @@
 /* App.css */
+
 .App {
+  font-family: Arial, sans-serif;
   text-align: center;
-  padding: 20px;
-  position: relative;
 }
 
-input {
-  margin: 20px;
+.options-bar {
+  margin-bottom: 20px;
 }
 
-button {
-  margin: 10px;
+.options-bar input[type="file"] {
+  margin-right: 10px;
+}
+
+.options-bar select {
+  margin-right: 10px;
+}
+
+.options-bar button {
+  margin: 0 5px;
 }
 
 .counter {
-  position: absolute;
-  top: 10px;
-  right: 20px;
+  margin: 20px 0;
   font-size: 14px;
   color: grey;
+}
+
+.progress-view {
+  margin-top: 20px;
+}
+
+.progress-view ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.progress-view li {
+  margin: 5px 0;
+}
+
+button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
 }
