@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import './App.css';
 
@@ -8,27 +8,92 @@ const App = () => {
   const [showTranslation, setShowTranslation] = useState(false);
   const [languageOptions, setLanguageOptions] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState(null);
-  const [learningGoal, setLearningGoal] = useState(2);
+  const [learningGoal, setLearningGoal] = useState(3);
   const [viewingProgress, setViewingProgress] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  // Memoize updateCard function
+  const updateCard = useCallback((cards) => {
+    const availableCards = cards.filter(card => card.learning_score < learningGoal);
+    if (availableCards.length > 0) {
+      const randomIndex = Math.floor(Math.random() * availableCards.length);
+      setCurrentCard(availableCards[randomIndex]);
+      setShowTranslation(false);
+    } else {
+      setCurrentCard(null);
+      alert('Congratulations! You have practiced all the words.');
+    }
+  }, [learningGoal]);
+
+  // Ensure learning_score is a number
+  const initializeLearningScore = (data) => {
+    return data.map(item => ({
+      ...item,
+      learning_score: isNaN(parseInt(item.learning_score, 10)) ? 0 : parseInt(item.learning_score, 10)
+    }));
+  };
+
+  // Load the default cards from the defaultData file
+  const loadDefaultCSV = useCallback(() => {
+    fetch(process.env.PUBLIC_URL + '/defaultData.csv')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load CSV file');
+        }
+        return response.text();
+      })
+      .then(text => {
+        Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (result) => {
+            const data = initializeLearningScore(result.data);
+            if (data.length > 0) {
+              const header = Object.keys(data[0]).filter(key => key !== 'learning_score');
+              const languages = header.slice(0); // Include the main language
+
+              if (header.length > 1) {
+                setFlashcards(data);
+                setLanguageOptions(languages);
+                setSelectedLanguage(header[0]); // Default to the first column language
+                updateCard(data);
+              } else {
+                alert('Invalid CSV format. Expected at least 2 columns.');
+              }
+            } else {
+              alert('Empty CSV file.');
+            }
+          },
+          error: (error) => {
+            alert('Error parsing the file.');
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error loading CSV file:', error);
+      });
+  }, [updateCard]);
+
   useEffect(() => {
     const savedFlashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
-    const savedLearningGoal = parseInt(localStorage.getItem('learningGoal'), 10) || 2;
+    const savedLearningGoal = parseInt(localStorage.getItem('learningGoal'), 10) || learningGoal;
     const savedLanguage = localStorage.getItem('selectedLanguage');
 
     if (savedFlashcards.length > 0) {
-      const header = Object.keys(savedFlashcards[0]).filter(key => key !== 'learning_score');
+      const initializedFlashcards = initializeLearningScore(savedFlashcards);
+      const header = Object.keys(initializedFlashcards[0]).filter(key => key !== 'learning_score');
       const languages = header.slice(0); // Include the main language
 
-      setFlashcards(savedFlashcards);
+      setFlashcards(initializedFlashcards);
       setLearningGoal(savedLearningGoal);
       setLanguageOptions(languages);
       setSelectedLanguage(savedLanguage || header[0]); // Default to the first column language
-      updateCard(savedFlashcards);
+      updateCard(initializedFlashcards);
+    } else {
+      loadDefaultCSV();
     }
-  }, []);
+  }, [loadDefaultCSV, updateCard]);
 
   useEffect(() => {
     localStorage.setItem('flashcards', JSON.stringify(flashcards));
@@ -45,7 +110,7 @@ const App = () => {
         header: true,
         skipEmptyLines: true,
         complete: (result) => {
-          const data = result.data;
+          const data = initializeLearningScore(result.data);
           if (data.length > 0) {
             const header = Object.keys(data[0]).filter(key => key !== 'learning_score');
             const languages = header.slice(0); // Include the main language
@@ -79,27 +144,12 @@ const App = () => {
     }
   };
 
-  const updateCard = (cards) => {
-    const availableCards = cards.filter(card => card.learning_score < learningGoal);
-    if (availableCards.length > 0) {
-      const randomIndex = Math.floor(Math.random() * availableCards.length);
-      setCurrentCard(availableCards[randomIndex]);
-      setShowTranslation(false);
-    } else {
-      alert('Congratulations! You have practiced all the words.');
-    }
-  };
-
   const revealTranslation = () => {
     setShowTranslation(true);
   };
 
   const keepPracticing = () => {
-    const updatedFlashcards = flashcards.map(card =>
-      card === currentCard ? { ...card, learning_score: Math.max(card.learning_score - 1, 0) } : card
-    );
-    setFlashcards(updatedFlashcards);
-    updateCard(updatedFlashcards);
+    updateCard(flashcards);
   };
 
   const markLearned = () => {
@@ -149,8 +199,9 @@ const App = () => {
     setCurrentCard(null);
     setSelectedLanguage(null);
     setLanguageOptions([]);
-    setLearningGoal(2);
+    setLearningGoal(3);
     setShowDeleteConfirm(false);
+    loadDefaultCSV(); // Load the default CSV after deleting all data
   };
 
   const totalWords = flashcards.length;
@@ -187,7 +238,7 @@ const App = () => {
       </div>
       {showDeleteConfirm && (
         <div className="confirmation-dialog">
-          <p>Are you sure you want to delete all data? This will reset everything including the loaded database and user progress.</p>
+          <p>Are you sure you want to delete all data?</p>
           <button onClick={confirmDeleteAllData}>Confirm</button>
           <button onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
         </div>
